@@ -10,8 +10,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "mongodb": "^7.5.0",
     "react": "^19.2.7",
-    "react-dom": "^19.2.7"
+    "react-dom": "^19.2.7",
+    "react-markdown": "^10.1.0",
+    "web-push": "^3.6.7"
   },
   "devDependencies": {
     "@types/react": "^19.2.17",

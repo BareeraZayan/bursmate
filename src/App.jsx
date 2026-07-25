@@ -1,120 +1,276 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
+import { useState, useEffect } from 'react'
+import Hero from './Hero'
+import HowItWorks from './HowItWorks'
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [formData, setFormData] = useState({
+    gradeType: 'CGPA', gradeValue: '', degreeLevel: '', fieldOfStudy: '', countryPreference: '',
+    ieltsScore: '', financialNeed: '', age: '', gender: '',
+  })
+  const [loading, setLoading] = useState(false)
+  const [matches, setMatches] = useState([])
+  const [error, setError] = useState('')
+  const [showForm, setShowForm] = useState(false)
+  const [hasSaved, setHasSaved] = useState(false)
+  const [statuses, setStatuses] = useState({})
+
+  useEffect(() => {
+    const saved = localStorage.getItem('bursmate_last_search')
+    if (saved) setHasSaved(true)
+    const savedStatuses = localStorage.getItem('bursmate_tracker')
+    if (savedStatuses) setStatuses(JSON.parse(savedStatuses))
+  }, [])
+
+  useEffect(() => {
+    if (formData.gradeType === 'Percentage') {
+      setFormData((prev) => ({ ...prev, degreeLevel: 'Bachelors' }))
+    } else if (formData.gradeType === 'CGPA' && formData.degreeLevel === 'Bachelors') {
+      setFormData((prev) => ({ ...prev, degreeLevel: '' }))
+    }
+  }, [formData.gradeType])
+
+  const handleChange = (e) => {
+    const { name, value } = e.target
+    setFormData((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const openForm = () => {
+    setShowForm(true)
+    setTimeout(() => {
+      document.getElementById('matcher-form')?.scrollIntoView({ behavior: 'smooth' })
+    }, 100)
+  }
+
+  const loadSavedMatches = () => {
+    const saved = localStorage.getItem('bursmate_last_search')
+    if (saved) {
+      const parsed = JSON.parse(saved)
+      setFormData(parsed.formData)
+      setMatches(parsed.matches)
+      setShowForm(true)
+      setTimeout(() => document.getElementById('matcher-form')?.scrollIntoView({ behavior: 'smooth' }), 100)
+    }
+  }
+
+  const updateStatus = (name, status) => {
+    const updated = { ...statuses, [name]: status }
+    setStatuses(updated)
+    localStorage.setItem('bursmate_tracker', JSON.stringify(updated))
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setLoading(true)
+    setError('')
+    setMatches([])
+
+    const academicRecord = formData.gradeType === 'CGPA'
+      ? `CGPA: ${formData.gradeValue}/4.0`
+      : `Intermediate percentage: ${formData.gradeValue}% (has not yet completed a Bachelor's degree)`
+
+    const prompt = `You are a scholarship advisor helping Pakistani students. Respond only in English, and respond with ONLY valid JSON, no markdown, no code fences, no extra text before or after.
+
+Student profile:
+- Academic record: ${academicRecord}
+- Degree level applying for: ${formData.degreeLevel}
+- Field of study: ${formData.fieldOfStudy}
+- Country preference: ${formData.countryPreference || 'No preference'}
+- IELTS score: ${formData.ieltsScore ? formData.ieltsScore : 'Not taken / not applicable'}
+- Financial need: ${formData.financialNeed}
+- Age: ${formData.age}
+- Gender: ${formData.gender}
+
+Suggest 5 real, currently active scholarships available to Pakistani students (e.g. CSC, Turkiye Burslari, Chevening, DAAD, Erasmus Mundus) that match the profile above. Return a JSON array with exactly this shape:
+
+[
+  {
+    "name": "Scholarship name",
+    "opens": "typical opening period based on past cycles, e.g. 'Typically opens around March'",
+    "closes": "typical closing period based on past cycles, e.g. 'Typically closes around October'",
+    "why": "one or two sentences on why it matches this specific student",
+    "tip": "one practical tip"
+  }
+]
+
+Return ONLY the JSON array, nothing else.`
+
+    try {
+      const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${import.meta.env.VITE_GROQ_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: 'llama-3.3-70b-versatile',
+          messages: [{ role: 'user', content: prompt }],
+        }),
+      })
+      const data = await response.json()
+      if (data.error) {
+        setError(data.error.message)
+      } else {
+        let raw = data.choices[0].message.content.trim()
+        raw = raw.replace(/^```json/, '').replace(/^```/, '').replace(/```$/, '').trim()
+        const parsed = JSON.parse(raw)
+        setMatches(parsed)
+        localStorage.setItem('bursmate_last_search', JSON.stringify({ formData, matches: parsed }))
+        setHasSaved(true)
+      }
+    } catch (err) {
+      setError('Something went wrong reading the results. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+      <Hero onOpenForm={openForm} />
 
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
+      {hasSaved && !showForm && (
+        <div className="saved-banner">
+          <p>You have saved matches from your last search.</p>
+          <button onClick={loadSavedMatches}>View saved matches</button>
         </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+      )}
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
+      <HowItWorks />
+
+      {showForm && (
+        <div className="page">
+          <div className="card" id="matcher-form">
+            <p className="eyebrow">Scholarship Matcher</p>
+            <h1>Find scholarships built for your profile</h1>
+            <p className="subtitle">Fill in your details once. We match you against active scholarships for Pakistani students.</p>
+
+            <form onSubmit={handleSubmit} className="matcher-form">
+              <div className="row">
+                <div className="form-group">
+                  <label>Grading system</label>
+                  <select name="gradeType" value={formData.gradeType} onChange={handleChange}>
+                    <option value="CGPA">CGPA (university)</option>
+                    <option value="Percentage">Percentage (Intermediate/FSc)</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>{formData.gradeType === 'CGPA' ? 'CGPA (out of 4.0)' : 'Percentage (out of 100)'}</label>
+                  <input
+                    type="number"
+                    step={formData.gradeType === 'CGPA' ? '0.01' : '0.1'}
+                    min="0"
+                    max={formData.gradeType === 'CGPA' ? '4' : '100'}
+                    name="gradeValue"
+                    value={formData.gradeValue}
+                    onChange={handleChange}
+                    placeholder={formData.gradeType === 'CGPA' ? 'Enter your GPA here' : 'Enter your percentage'}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label>Degree level</label>
+                <select name="degreeLevel" value={formData.degreeLevel} onChange={handleChange} required>
+                  <option value="">Select</option>
+                  <option value="Bachelors" disabled={formData.gradeType === 'CGPA'}>Bachelors</option>
+                  <option value="Masters" disabled={formData.gradeType === 'Percentage'}>Masters</option>
+                  <option value="PhD" disabled={formData.gradeType === 'Percentage'}>PhD</option>
+                </select>
+                {formData.gradeType === 'Percentage' && (
+                  <span className="hint">Masters and PhD need a completed Bachelor's first, so they're locked for Intermediate results.</span>
+                )}
+                {formData.gradeType === 'CGPA' && (
+                  <span className="hint">Bachelors is locked because CGPA means you're already at university level — select Masters or PhD.</span>
+                )}
+              </div>
+
+              <div className="form-group">
+                <label>Field of study</label>
+                <input type="text" name="fieldOfStudy" value={formData.fieldOfStudy} onChange={handleChange} placeholder="Enter your field of study" required />
+              </div>
+
+              <div className="row">
+                <div className="form-group">
+                  <label>Country preference</label>
+                  <input type="text" name="countryPreference" value={formData.countryPreference} onChange={handleChange} placeholder="Country name" />
+                </div>
+                <div className="form-group">
+                  <label>IELTS score (optional)</label>
+                  <input type="number" step="0.5" min="0" max="9" name="ieltsScore" value={formData.ieltsScore} onChange={handleChange} placeholder="Enter your IELTS score" />
+                </div>
+              </div>
+
+              <div className="row">
+                <div className="form-group">
+                  <label>Financial need</label>
+                  <select name="financialNeed" value={formData.financialNeed} onChange={handleChange} required>
+                    <option value="">Select</option>
+                    <option value="Full funding needed">Full funding needed</option>
+                    <option value="Partial funding needed">Partial funding needed</option>
+                    <option value="Not needed">Not needed</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>Age</label>
+                  <input type="number" min="15" max="65" name="age" value={formData.age} onChange={handleChange} placeholder="Enter your age" required />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label>Gender</label>
+                <select name="gender" value={formData.gender} onChange={handleChange} required>
+                  <option value="">Select</option>
+                  <option value="Female">Female</option>
+                  <option value="Male">Male</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              <button type="submit" disabled={loading}>
+                {loading ? 'Finding matches...' : 'Find my matches'}
+              </button>
+            </form>
+
+            {error && <div className="error-box">{error}</div>}
+
+            {matches.length > 0 && (
+              <div className="results-box" id="results-print">
+                <div className="results-header">
+                  <p className="eyebrow">Your matches</p>
+                  <button type="button" className="print-btn" onClick={() => window.print()}>Save as PDF</button>
+                </div>
+
+                {matches.map((m) => (
+                  <div className="match-card" key={m.name}>
+                    <div className="match-top">
+                      <h3>{m.name}</h3>
+                      <select
+                        className="status-select"
+                        value={statuses[m.name] || 'Not started'}
+                        onChange={(e) => updateStatus(m.name, e.target.value)}
+                      >
+                        <option value="Not started">Not started</option>
+                        <option value="In progress">In progress</option>
+                        <option value="Submitted">Submitted</option>
+                      </select>
+                    </div>
+                    <div className="match-dates">
+                      <span><strong>Opens:</strong> {m.opens}</span>
+                      <span><strong>Closes:</strong> {m.closes}</span>
+                    </div>
+                    <p className="match-why">{m.why}</p>
+                    <p className="match-tip"><strong>Tip:</strong> {m.tip}</p>
+                  </div>
+                ))}
+
+                <p className="disclaimer">Dates are based on typical past cycles where exact figures aren't public. Always confirm the current deadline on the scholarship's official website before applying.</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </>
   )
 }
