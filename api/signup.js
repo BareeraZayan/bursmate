@@ -22,10 +22,11 @@ export default async function handler(req, res) {
     if (!name || !email || !password) {
       return res.status(400).json({ error: 'Name, email, and password are required.' })
     }
-
-    if (password.length < 6) {
-      return res.status(400).json({ error: 'Password must be at least 6 characters.' })
+const passwordRules = /^(?=.*[A-Z])(?=.*[0-9]).{8,}$/
+    if (!passwordRules.test(password)) {
+      return res.status(400).json({ error: 'Password must be at least 8 characters, with at least 1 capital letter and 1 number.' })
     }
+    
 
     const client = await getClient()
     const db = client.db('bursmate')

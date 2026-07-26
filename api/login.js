@@ -30,12 +30,12 @@ export default async function handler(req, res) {
 
     const user = await users.findOne({ email: email.toLowerCase() })
     if (!user) {
-      return res.status(401).json({ error: 'Invalid email or password.' })
+      return res.status(404).json({ error: 'No account found with this email.' })
     }
 
     const isMatch = await bcrypt.compare(password, user.password)
     if (!isMatch) {
-      return res.status(401).json({ error: 'Invalid email or password.' })
+      return res.status(401).json({ error: 'Incorrect password.' })
     }
 
     const token = jwt.sign(

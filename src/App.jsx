@@ -20,6 +20,7 @@ function App() {
   const [user, setUser] = useState(null)
   const [hasSaved, setHasSaved] = useState(false)
   const [statuses, setStatuses] = useState({})
+  const [docChecks, setDocChecks] = useState({})
 
   useEffect(() => {
     const saved = localStorage.getItem('bursmate_last_search')
@@ -28,6 +29,8 @@ function App() {
     if (savedStatuses) setStatuses(JSON.parse(savedStatuses))
     const savedUser = localStorage.getItem('bursmate_user')
     if (savedUser) setUser(JSON.parse(savedUser))
+    const savedDocs = localStorage.getItem('bursmate_doc_checks')
+    if (savedDocs) setDocChecks(JSON.parse(savedDocs))
   }, [])
 
   useEffect(() => {
@@ -46,6 +49,8 @@ function App() {
   const handleLogout = () => {
     localStorage.removeItem('bursmate_user')
     setUser(null)
+    setShowForm(false)
+    setMatches([])
   }
 
   const openForm = () => {
@@ -70,6 +75,13 @@ function App() {
     const updated = { ...statuses, [name]: status }
     setStatuses(updated)
     localStorage.setItem('bursmate_tracker', JSON.stringify(updated))
+  }
+
+  const toggleDoc = (scholarshipName, docIndex) => {
+    const key = `${scholarshipName}::${docIndex}`
+    const updated = { ...docChecks, [key]: !docChecks[key] }
+    setDocChecks(updated)
+    localStorage.setItem('bursmate_doc_checks', JSON.stringify(updated))
   }
 
   const handleSubmit = async (e) => {
@@ -150,7 +162,7 @@ Return ONLY the JSON array, nothing else.`
         onLogout={handleLogout}
       />
 
-      {hasSaved && !showForm && (
+      {hasSaved && !showForm && user && (
         <div className="saved-banner">
           <p>You have saved matches from your last search.</p>
           <button onClick={loadSavedMatches}>View saved matches</button>
@@ -159,7 +171,7 @@ Return ONLY the JSON array, nothing else.`
 
       <HowItWorks />
 
-      {showForm && (
+      {showForm && user && (
         <div className="page">
           <div className="card" id="matcher-form">
             <p className="eyebrow">Scholarship Matcher</p>
@@ -271,19 +283,23 @@ Return ONLY the JSON array, nothing else.`
                     <p><strong>Field of study:</strong> {formData.fieldOfStudy}</p>
                     <p><strong>Country preference:</strong> {formData.countryPreference || 'No preference'}</p>
                   </div>
-                  <table className="print-table">
-                    <thead>
-                      <tr><th>Scholarship</th><th>Country</th></tr>
-                    </thead>
-                    <tbody>
-                      {matches.map((m) => (
-                        <tr key={m.name}>
-                          <td>{m.name}</td>
-                          <td>{m.country}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+
+                  {matches.map((m) => (
+                    <div className="print-scholarship-block" key={m.name}>
+                      <h3>{m.name} ({m.country})</h3>
+                      <p><strong>Opens:</strong> {m.opens} &nbsp; <strong>Closes:</strong> {m.closes}</p>
+                      <p><strong>Why it matches:</strong> {m.why}</p>
+                      <p><strong>Tip:</strong> {m.tip}</p>
+                      {m.documents && m.documents.length > 0 && (
+                        <>
+                          <p><strong>Documents needed:</strong></p>
+                          <ul>
+                            {m.documents.map((doc, idx) => <li key={idx}>{doc}</li>)}
+                          </ul>
+                        </>
+                      )}
+                    </div>
+                  ))}
                 </div>
 
                 {matches.map((m) => (
@@ -306,16 +322,38 @@ Return ONLY the JSON array, nothing else.`
                     </div>
                     <p className="match-why">{m.why}</p>
                     <p className="match-tip"><strong>Tip:</strong> {m.tip}</p>
+
                     {m.documents && m.documents.length > 0 && (
                       <div className="match-documents">
                         <strong>Documents needed:</strong>
-                        <ul>
-                          {m.documents.map((doc, idx) => (
-                            <li key={idx}>{doc}</li>
-                          ))}
+                        <ul className="doc-checklist">
+                          {m.documents.map((doc, idx) => {
+                            const key = `${m.name}::${idx}`
+                            return (
+                              <li key={idx}>
+                                <label>
+                                  <input
+                                    type="checkbox"
+                                    checked={!!docChecks[key]}
+                                    onChange={() => toggleDoc(m.name, idx)}
+                                  />
+                                  <span className={docChecks[key] ? 'doc-checked' : ''}>{doc}</span>
+                                </label>
+                              </li>
+                            )
+                          })}
                         </ul>
                       </div>
                     )}
+
+                    
+                      href={`https://www.google.com/search?q=${encodeURIComponent(m.name + ' official website apply')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="apply-btn"
+                    >
+                      Apply Now →
+                    </a>
                   </div>
                 ))}
 

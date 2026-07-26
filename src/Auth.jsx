@@ -10,9 +10,35 @@ function Auth({ onClose, onLoginSuccess }) {
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
+  const doLogin = async (email, password) => {
+    const response = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    })
+    const data = await response.json()
+    if (!response.ok) {
+      setError(data.error)
+      return false
+    }
+    localStorage.setItem('bursmate_user', JSON.stringify({ token: data.token, name: data.name, email: data.email }))
+    onLoginSuccess({ name: data.name, email: data.email })
+    onClose()
+    return true
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
+
+    if (mode === 'signup') {
+      const passwordRules = /^(?=.*[A-Z])(?=.*[0-9]).{8,}$/
+      if (!passwordRules.test(formData.password)) {
+        setError('Password must be at least 8 characters, with at least 1 capital letter and 1 number.')
+        return
+      }
+    }
+
     setLoading(true)
 
     try {
@@ -26,23 +52,10 @@ function Auth({ onClose, onLoginSuccess }) {
         if (!response.ok) {
           setError(data.error)
         } else {
-          setMode('login')
-          setError('Account created! Please log in.')
+          await doLogin(formData.email, formData.password)
         }
       } else {
-        const response = await fetch('/api/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: formData.email, password: formData.password }),
-        })
-        const data = await response.json()
-        if (!response.ok) {
-          setError(data.error)
-        } else {
-          localStorage.setItem('bursmate_user', JSON.stringify({ token: data.token, name: data.name, email: data.email }))
-          onLoginSuccess({ name: data.name, email: data.email })
-          onClose()
-        }
+        await doLogin(formData.email, formData.password)
       }
     } catch (err) {
       setError('Something went wrong. Please try again.')
@@ -73,6 +86,9 @@ function Auth({ onClose, onLoginSuccess }) {
           <div className="form-group">
             <label>Password</label>
             <input type="password" name="password" value={formData.password} onChange={handleChange} placeholder="At least 6 characters" required minLength={6} />
+            {mode === 'signup' && (
+              <span className="hint">Must be 8+ characters, with at least 1 capital letter and 1 number.</span>
+            )}
           </div>
 
           <button type="submit" disabled={loading}>

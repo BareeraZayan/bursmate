@@ -882,3 +882,68 @@ button[type='submit']:disabled { opacity: 0.6; cursor: not-allowed; }
   color: #9AA7BD;
   margin-top: 10px;
 }
+.doc-checklist {
+  list-style: none;
+  padding-left: 0 !important;
+}
+
+.doc-checklist li {
+  margin-bottom: 6px;
+}
+
+.doc-checklist label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.doc-checklist input {
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+}
+
+.doc-checked {
+  color: #16233B;
+  font-weight: 600;
+}
+
+.apply-btn {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 8px 18px;
+  background: #16233B;
+  color: #FAF7F0;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.apply-btn:hover {
+  background: #223353;
+}
+
+.print-scholarship-block {
+  margin-top: 20px;
+  padding-top: 14px;
+  border-top: 1px solid #E3E7EE;
+}
+
+.print-scholarship-block h3 {
+  font-family: Georgia, serif;
+  font-size: 15px;
+  color: #16233B;
+  margin-bottom: 6px;
+}
+
+.print-scholarship-block p {
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+.print-scholarship-block ul {
+  padding-left: 18px;
+  font-size: 12px;
+}
