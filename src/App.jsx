@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react'
 import Hero from './Hero'
 import HowItWorks from './HowItWorks'
 import './App.css'
+import ChatAssistant from './ChatAssistant'
+import MyProgress from './MyProgress'
+import Auth from './Auth'
 
 function App() {
   const [formData, setFormData] = useState({
@@ -12,6 +15,9 @@ function App() {
   const [matches, setMatches] = useState([])
   const [error, setError] = useState('')
   const [showForm, setShowForm] = useState(false)
+  const [showProgress, setShowProgress] = useState(false)
+  const [showAuth, setShowAuth] = useState(false)
+  const [user, setUser] = useState(null)
   const [hasSaved, setHasSaved] = useState(false)
   const [statuses, setStatuses] = useState({})
 
@@ -20,6 +26,8 @@ function App() {
     if (saved) setHasSaved(true)
     const savedStatuses = localStorage.getItem('bursmate_tracker')
     if (savedStatuses) setStatuses(JSON.parse(savedStatuses))
+    const savedUser = localStorage.getItem('bursmate_user')
+    if (savedUser) setUser(JSON.parse(savedUser))
   }, [])
 
   useEffect(() => {
@@ -33,6 +41,11 @@ function App() {
   const handleChange = (e) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const handleLogout = () => {
+    localStorage.removeItem('bursmate_user')
+    setUser(null)
   }
 
   const openForm = () => {
@@ -86,10 +99,12 @@ Suggest 5 real, currently active scholarships available to Pakistani students (e
 [
   {
     "name": "Scholarship name",
+    "country": "Country offering this scholarship",
     "opens": "typical opening period based on past cycles, e.g. 'Typically opens around March'",
     "closes": "typical closing period based on past cycles, e.g. 'Typically closes around October'",
     "why": "one or two sentences on why it matches this specific student",
-    "tip": "one practical tip"
+    "tip": "one practical tip",
+    "documents": ["array of 4-6 specific documents this scholarship typically requires"]
   }
 ]
 
@@ -127,7 +142,13 @@ Return ONLY the JSON array, nothing else.`
 
   return (
     <>
-      <Hero onOpenForm={openForm} />
+      <Hero
+        onOpenForm={openForm}
+        onOpenProgress={() => setShowProgress(true)}
+        onOpenAuth={() => setShowAuth(true)}
+        user={user}
+        onLogout={handleLogout}
+      />
 
       {hasSaved && !showForm && (
         <div className="saved-banner">
@@ -242,6 +263,29 @@ Return ONLY the JSON array, nothing else.`
                   <button type="button" className="print-btn" onClick={() => window.print()}>Save as PDF</button>
                 </div>
 
+                <div id="print-summary" className="print-only">
+                  <h2>BursMate — My Scholarship Matches</h2>
+                  <div className="print-profile">
+                    <p><strong>Academic record:</strong> {formData.gradeType === 'CGPA' ? `CGPA ${formData.gradeValue}/4.0` : `${formData.gradeValue}% (Intermediate)`}</p>
+                    <p><strong>Degree level:</strong> {formData.degreeLevel}</p>
+                    <p><strong>Field of study:</strong> {formData.fieldOfStudy}</p>
+                    <p><strong>Country preference:</strong> {formData.countryPreference || 'No preference'}</p>
+                  </div>
+                  <table className="print-table">
+                    <thead>
+                      <tr><th>Scholarship</th><th>Country</th></tr>
+                    </thead>
+                    <tbody>
+                      {matches.map((m) => (
+                        <tr key={m.name}>
+                          <td>{m.name}</td>
+                          <td>{m.country}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
                 {matches.map((m) => (
                   <div className="match-card" key={m.name}>
                     <div className="match-top">
@@ -262,6 +306,16 @@ Return ONLY the JSON array, nothing else.`
                     </div>
                     <p className="match-why">{m.why}</p>
                     <p className="match-tip"><strong>Tip:</strong> {m.tip}</p>
+                    {m.documents && m.documents.length > 0 && (
+                      <div className="match-documents">
+                        <strong>Documents needed:</strong>
+                        <ul>
+                          {m.documents.map((doc, idx) => (
+                            <li key={idx}>{doc}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                   </div>
                 ))}
 
@@ -271,6 +325,11 @@ Return ONLY the JSON array, nothing else.`
           </div>
         </div>
       )}
+
+      <ChatAssistant />
+
+      {showProgress && <MyProgress onClose={() => setShowProgress(false)} />}
+      {showAuth && <Auth onClose={() => setShowAuth(false)} onLoginSuccess={setUser} />}
     </>
   )
 }
