@@ -58,9 +58,9 @@ The response comes back as structured JSON, not raw text — that's what lets it
 
 *(3 screenshots below — hero/landing, the scholarship matcher in action, and the progress tracker)*
 
-![Hero section]("C:\Users\DELL\bursmate\homepage.png")
-![Scholarship matcher results](screenshots/matches.png)
-![My Progress panel](screenshots/progress.png)
+![Hero section](homepage.png)
+![Scholarship matcher results](matches.png)
+![My Progress panel](profile.png)
 
 ## Running it locally
 
