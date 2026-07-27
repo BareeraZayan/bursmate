@@ -6,13 +6,13 @@ BursMate is an AI-powered scholarship navigator built for Pakistani students pla
 
 ## The problem, and who it's for
 
-Every year thousands of Pakistani students look for scholarships to study abroad — CSC, Türkiye Bursları, Chevening, DAAD, Erasmus Mundus, and dozens of others and almost none of that information lives in one place. Eligibility rules are different for every scholarship, deadlines are scattered across random websites and Facebook groups, and most students end up either missing a scholarship they actually qualified for, or wasting weeks reading about ones they never had a real chance at.
+Every year thousands of Pakistani students look for scholarships to study abroad like CSC, Türkiye Bursları, Chevening, DAAD, Erasmus Mundus, and dozens of others and almost none of that information lives in one place. Eligibility rules are different for every scholarship, deadlines are scattered across random websites and Facebook groups, and most students end up either missing a scholarship they actually qualified for, or wasting weeks reading about ones they never had a real chance at.
 
 This is built specifically for that student: someone in Pakistan, at Bachelors, Masters, or PhD level, who has no single reliable place to check "which of these scholarships am I actually eligible for, right now, with my own grades and profile." BursMate takes their academic profile once, and tells them which real, currently open scholarships actually fit, why they fit, what documents they'll need, and lets them track their progress on each one until submission.
 
 ## Live URL
 
-**[https://bursmate.vercel.app](https://bursmate.vercel.app)** — open, sign up, and use it directly. No login is shared/demo; anyone can create their own account.
+**[https://bursmate.vercel.app](https://bursmate.vercel.app)** open, sign up, and use it directly. No login is shared/demo; anyone can create their own account.
 
 ## Features
 
@@ -26,9 +26,9 @@ Everything below is live and working in the deployed app, not planned or partial
 - A "My Progress" page that pulls together the saved profile and every scholarship being tracked, in one view
 - A floating AI chat assistant that helps draft a Statement of Purpose, put together a recommendation letter template, or just answer questions about what a scholarship needs and conversation is saved locally
 - One-click PDF export of the whole thing — profile, scholarship details, and which documents are checked and opens in a new tab ready to save
-- Instead of sending students to an AI-guessed link for the "official site" (which can be wrong or outright made up), the app links to a Google search for the verified official page — small thing, but it matters when the stakes are a real application
+- Instead of sending students to an AI-guessed link for the "official site" (which can be wrong or outright made up), the app links to a Google search for the verified official page but it's small thing, but it matters when the stakes are a real application
 - Push notifications for deadlines — this part is fully built on the backend: scholarship deadlines sit in a MongoDB collection, and a Vercel Cron job runs daily, checking what's closing within 7 days and pushing browser notifications to anyone subscribed
-- Custom-designed UI, navy/gold theme, a "how it works" section, scroll animations — nothing off a template
+- Custom-designed UI, navy/gold theme, a "how it works" section, scroll animations nothing off a template
 
 ## The AI feature
 
