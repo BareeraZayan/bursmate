@@ -75,7 +75,7 @@ cd bursmate
 npm install
 ```
 
-Then add a `.env` file in the root with your own Groq API key, MongoDB URI, JWT secret, and VAPID keys for push notifications — none of that is committed to this repo.
+Then add a `.env` file in the root with your own Groq API key, MongoDB URI, JWT secret, and VAPID keys for push notifications and none of that is committed to this repo.
 
 ```bash
 npm run dev
