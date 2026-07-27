@@ -56,11 +56,16 @@ The response comes back as structured JSON, not raw text — that's what lets it
 
 ## Screenshots
 
-*(3 screenshots below — hero/landing, the scholarship matcher in action, and the progress tracker)*
+*(Screenshots below show the app landing page, search and matching flow, auth/chat interfaces, and progress tracker.)*
 
 ![Hero section](homepage.png)
 ![Scholarship matcher results](matches.png)
 ![My Progress panel](profile.png)
+![Search page](search.png)
+![Chat assistant](chat.png)
+![Auth page](auth.png)
+![PDF export preview](pdf.png)
+![Hero asset](src/assets/hero.png)
 
 ## Running it locally
 
