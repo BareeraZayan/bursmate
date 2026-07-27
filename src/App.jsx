@@ -84,7 +84,7 @@ function App() {
     localStorage.setItem('bursmate_doc_checks', JSON.stringify(updated))
   }
 
-  const handlePrint = (formData, matches) => {
+  const handlePrint = (formData, matches, docChecks) => {
     const profileHtml = `
       <p><strong>Academic record:</strong> ${formData.gradeType === 'CGPA' ? `CGPA ${formData.gradeValue}/4.0` : `${formData.gradeValue}% (Intermediate)`}</p>
       <p><strong>Degree level:</strong> ${formData.degreeLevel}</p>
@@ -101,8 +101,12 @@ function App() {
         <p style="font-size:13px;margin:4px 0;"><strong>Tip:</strong> ${m.tip}</p>
         ${m.documents && m.documents.length > 0 ? `
           <p style="font-size:13px;margin:8px 0 4px;"><strong>Documents needed:</strong></p>
-          <ul style="font-size:13px;padding-left:20px;margin:0;">
-            ${m.documents.map((doc) => `<li>${doc}</li>`).join('')}
+          <ul style="font-size:13px;padding-left:20px;margin:0;list-style:none;">
+            ${m.documents.map((doc, idx) => {
+              const key = `${m.name}::${idx}`
+              const checked = docChecks[key]
+              return `<li>${checked ? '☑' : '☐'} ${doc}</li>`
+            }).join('')}
           </ul>
         ` : ''}
       </div>
@@ -318,7 +322,7 @@ Return ONLY the JSON array, nothing else.`
               <div className="results-box">
                 <div className="results-header">
                   <p className="eyebrow">Your matches</p>
-                  <button type="button" className="print-btn" onClick={() => handlePrint(formData, matches)}>Save as PDF</button>
+                  <button type="button" className="print-btn" onClick={() => handlePrint(formData, matches, docChecks)}>Save as PDF</button>
                 </div>
 
                 {matches.map((m) => (
@@ -371,7 +375,7 @@ Return ONLY the JSON array, nothing else.`
                       rel="noopener noreferrer"
                       className="apply-btn"
                     >
-                      Apply Now →
+                      Search Official Website →
                     </a>
                   </div>
                 ))}
