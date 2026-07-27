@@ -84,6 +84,52 @@ function App() {
     localStorage.setItem('bursmate_doc_checks', JSON.stringify(updated))
   }
 
+  const handlePrint = (formData, matches) => {
+    const profileHtml = `
+      <p><strong>Academic record:</strong> ${formData.gradeType === 'CGPA' ? `CGPA ${formData.gradeValue}/4.0` : `${formData.gradeValue}% (Intermediate)`}</p>
+      <p><strong>Degree level:</strong> ${formData.degreeLevel}</p>
+      <p><strong>Field of study:</strong> ${formData.fieldOfStudy}</p>
+      <p><strong>Country preference:</strong> ${formData.countryPreference || 'No preference'}</p>
+    `
+
+    const scholarshipsHtml = matches.map((m) => `
+      <div style="margin-top:20px;padding-top:14px;border-top:1px solid #ccc;">
+        <h3 style="font-family:Georgia,serif;font-size:16px;color:#16233B;margin-bottom:6px;">${m.name} (${m.country})</h3>
+        <p style="font-size:13px;margin:4px 0;"><strong>Opens:</strong> ${m.opens}</p>
+        <p style="font-size:13px;margin:4px 0;"><strong>Closes:</strong> ${m.closes}</p>
+        <p style="font-size:13px;margin:4px 0;"><strong>Why it matches:</strong> ${m.why}</p>
+        <p style="font-size:13px;margin:4px 0;"><strong>Tip:</strong> ${m.tip}</p>
+        ${m.documents && m.documents.length > 0 ? `
+          <p style="font-size:13px;margin:8px 0 4px;"><strong>Documents needed:</strong></p>
+          <ul style="font-size:13px;padding-left:20px;margin:0;">
+            ${m.documents.map((doc) => `<li>${doc}</li>`).join('')}
+          </ul>
+        ` : ''}
+      </div>
+    `).join('')
+
+    const fullHtml = `
+      <html>
+        <head>
+          <title>BursMate — My Scholarship Matches</title>
+        </head>
+        <body style="font-family: system-ui, sans-serif; padding: 30px; color: #16233B;">
+          <h1 style="font-family:Georgia,serif;font-size:22px;">BursMate — My Scholarship Matches</h1>
+          ${profileHtml}
+          ${scholarshipsHtml}
+        </body>
+      </html>
+    `
+
+    const printWindow = window.open('', '_blank')
+    printWindow.document.write(fullHtml)
+    printWindow.document.close()
+    printWindow.focus()
+    setTimeout(() => {
+      printWindow.print()
+    }, 300)
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
@@ -269,37 +315,10 @@ Return ONLY the JSON array, nothing else.`
             {error && <div className="error-box">{error}</div>}
 
             {matches.length > 0 && (
-              <div className="results-box" id="results-print">
+              <div className="results-box">
                 <div className="results-header">
                   <p className="eyebrow">Your matches</p>
-                  <button type="button" className="print-btn" onClick={() => window.print()}>Save as PDF</button>
-                </div>
-
-                <div id="print-summary" className="print-only">
-                  <h2>BursMate — My Scholarship Matches</h2>
-                  <div className="print-profile">
-                    <p><strong>Academic record:</strong> {formData.gradeType === 'CGPA' ? `CGPA ${formData.gradeValue}/4.0` : `${formData.gradeValue}% (Intermediate)`}</p>
-                    <p><strong>Degree level:</strong> {formData.degreeLevel}</p>
-                    <p><strong>Field of study:</strong> {formData.fieldOfStudy}</p>
-                    <p><strong>Country preference:</strong> {formData.countryPreference || 'No preference'}</p>
-                  </div>
-
-                  {matches.map((m) => (
-                    <div className="print-scholarship-block" key={m.name}>
-                      <h3>{m.name} ({m.country})</h3>
-                      <p><strong>Opens:</strong> {m.opens} &nbsp; <strong>Closes:</strong> {m.closes}</p>
-                      <p><strong>Why it matches:</strong> {m.why}</p>
-                      <p><strong>Tip:</strong> {m.tip}</p>
-                      {m.documents && m.documents.length > 0 && (
-                        <>
-                          <p><strong>Documents needed:</strong></p>
-                          <ul>
-                            {m.documents.map((doc, idx) => <li key={idx}>{doc}</li>)}
-                          </ul>
-                        </>
-                      )}
-                    </div>
-                  ))}
+                  <button type="button" className="print-btn" onClick={() => handlePrint(formData, matches)}>Save as PDF</button>
                 </div>
 
                 {matches.map((m) => (
@@ -346,7 +365,7 @@ Return ONLY the JSON array, nothing else.`
                       </div>
                     )}
 
-                    
+                    <a
                       href={`https://www.google.com/search?q=${encodeURIComponent(m.name + ' official website apply')}`}
                       target="_blank"
                       rel="noopener noreferrer"
