@@ -56,16 +56,36 @@ The response comes back as structured JSON, not raw text and that's what lets it
 
 ## Screenshots
 
-*(Screenshots below show the app landing page, search and matching flow, auth/chat interfaces, and progress tracker.)*
+## Screenshots
 
-![Hero section](homepage.png)
-![Scholarship matcher results](matches.png)
-![My Progress panel](profile.png)
-![Search page](search.png)
+### Authentication
+![Sign in page](auth.png)
+Custom email/password auth — bcrypt hashing, JWT sessions, enforced password strength.
+
+### Homepage / Dashboard
+![Homepage](homepage.png)
+Navy/gold themed dashboard with one-click access to profile setup, deadline alerts, and progress tracking.
+
+### Profile Form
+![Profile form](profile.png)
+Student enters CGPA, degree level, field of study, country preference, and IELTS score — this profile is sent to the AI matcher.
+
+### AI Matching Results
+![Scholarship match results](matches.png)
+Each matched scholarship shows eligibility reasoning, opening/closing window, a practical tip, and a document checklist with status tracking.
+
+### Verified Official Links
+![Search official website](search.png)
+Instead of risking an AI-guessed link, the app redirects to a verified Google search for each scholarship's official page.
+
+### PDF Export
+![PDF export](pdf.png)
+One-click export of the full profile, matched scholarships, and checked documents into a shareable PDF.
+
+### AI Chat Assistant
 ![Chat assistant](chat.png)
-![Auth page](auth.png)
-![PDF export preview](pdf.png)
-![Hero asset](src/assets/hero.png)
+Floating assistant that helps draft a Statement of Purpose, build a recommendation letter template, or answer questions about required documents.
+
 
 ## Running it locally
 
