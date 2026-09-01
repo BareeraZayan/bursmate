@@ -32,7 +32,7 @@ Everything below is live and working in the deployed app, not planned or partial
 
 ## The AI feature
 
-BursMate uses Groq's `llama-3.3-70b-versatile` model in two places, and both prompts are ones I wrote and iterated on myself.
+BursMate uses Groq's 'openai/gpt-oss-120b' model in two places, and both prompts are ones I wrote and iterated on myself.
 
 **Scholarship matcher** : When a student submits their profile, this is the prompt sent to the model:
 
@@ -47,14 +47,12 @@ The response comes back as structured JSON, not raw text and that's what lets it
 ## Built with
 
 - Frontend: Vite + React
-- AI model: Groq API, `llama-3.3-70b-versatile`
+- AI model: Groq API, 'openai/gpt-oss-120b'
 - Database: MongoDB Atlas — user accounts, push subscriptions, scholarship deadline data
 - Auth: custom email/password, `bcryptjs` for hashing, `jsonwebtoken` for sessions
 - Push notifications: Web Push API, service worker, Vercel Cron
 - Hosting: Vercel (frontend + serverless API routes)
 - Git / GitHub
-
-## Screenshots
 
 ## Screenshots
 
